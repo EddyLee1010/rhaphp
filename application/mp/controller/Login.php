@@ -14,11 +14,11 @@ namespace app\mp\controller;
 use app\common\model\MemberWealthRecord;
 use app\common\model\MpFriends;
 use app\common\model\Setting;
-use think\Cache;
+use think\facade\Cache;
 use think\Controller;
-use think\Cookie;
-use think\Request;
-use think\Session;
+use think\facade\Cookie;
+use think\facade\Request;
+use think\facade\Session;
 
 class Login extends Controller
 {
@@ -42,7 +42,7 @@ class Login extends Controller
             $this->assign('errMsg', '请返回公众号重新注册');
             return view('common/error');
         }
-        if (Request::instance()->isAjax()) {
+        if (Request::isAjax()) {
             $data = input();
             if (empty($data['password']) || $data['password'] != $data['repassword']) {
                 ajaxMsg(0, '密码为空，或者密码不匹配');
@@ -81,7 +81,7 @@ class Login extends Controller
             $this->error('此登录或者注册方式已经关闭');
         }
 
-        if (Request::instance()->isAjax()) {
+        if (Request::isAjax()) {
             $data = input();
             if (empty($data['password'])) {
                 ajaxMsg(0, '密码不能为空');

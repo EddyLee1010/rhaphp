@@ -12,7 +12,7 @@ namespace app\mp\controller;
 
 
 use app\common\model\MpReply;
-use think\Request;
+use think\facade\Request;
 
 
 class   Material extends Base
@@ -43,11 +43,12 @@ class   Material extends Base
                         $data['create_time'] = $val['update_time'];
                         $data['media_id'] = $val['media_id'];
                         $data['title'] = $val['name'];
-                        $data['url'] = getHostDomain() . url('mp/Show/image', ['url' => urlencode($val['url'])]);
-                        $model = new \app\common\model\Material();
-                        $model->addMaterialByMp($type, $data);
+                        $data['url'] = getHostDomain() . url('mp/Show/image','','').'?url='.urlencode($val['url']);
+                        if(!empty($val['url'])){
+                            $model = new \app\common\model\Material();
+                            $model->addMaterialByMp($type, $data);
+                        }
                     }
-
                     $url = getHostDomain() . url('mp/Material/sycMaterial', ['type' => $type, 'offset' => $offset + $i]);
                     $jdtCss = ceil(($offset / $image_count) * 100) . '%';
                     $text = $jdtCss;
@@ -207,7 +208,7 @@ class   Material extends Base
                 foreach ($newsItem['news_item'] as $key1 => $val2) {
                     $news[$key]['news_item'][$key1]['title'] = $val2['title'];
                     $news[$key]['news_item'][$key1]['url'] = $val2['url'];
-                    $news[$key]['news_item'][$key1]['thumb_url'] = getHostDomain() . url('mp/Show/image', ['url' => urlencode($val2['thumb_url'])]);
+                    $news[$key]['news_item'][$key1]['thumb_url'] = getHostDomain() . url('mp/Show/image','','').'?url='.urlencode($val2['thumb_url']);
                 }
             }
             $this->assign('page', $data->render());
@@ -280,7 +281,7 @@ class   Material extends Base
     {
         header("Content-type: image/png");
         $url = urldecode($url);
-        \think\Loader::import('phpqrcode.phpqrcode', EXTEND_PATH, '.php');
+        include_once EXTEND_PATH.'/phpqrcode/phpqrcode.php';
         \Qrcode::png($url, $file = false, $level = 'L', $size = 4);
         exit();
 

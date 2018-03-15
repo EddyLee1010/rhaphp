@@ -1,11 +1,13 @@
 <?php
 namespace app\install\controller;
 
+use think\facade\Env;
+
 class Index extends \think\Controller {
 
 	protected $status;
 
-	public function _initialize() {
+	public function initialize() {
 		$this->status = array(
 			'index'    => 'info',
 			'check'    => 'info',
@@ -13,8 +15,7 @@ class Index extends \think\Controller {
 			'sql'      => 'info',
 			'complete' => 'info',
 		);
-
-		if (request()->action() != 'complete' && is_file(APP_PATH . '/database.php') && is_file(APP_PATH . '/install.lock')) {
+		if (request()->action() != 'complete' && is_file(APP_PATH . '/install.lock')) {
 			return $this->redirect('admin/index/index');
 		}
 	}
@@ -42,7 +43,7 @@ class Index extends \think\Controller {
 		$this->status['index'] = 'success';
 		$this->status['check'] = 'primary';
 		$this->assign('status', $this->status);
-		return $this->fetch();
+		return view();
 	}
 
 	public function config($db = null, $admin = null) {
@@ -76,7 +77,7 @@ class Index extends \think\Controller {
 				$db  = \think\Db::connect($DB);
 				$sql = "CREATE DATABASE IF NOT EXISTS `{$dbname}` DEFAULT CHARACTER SET utf8";
 				if (!$db->execute($sql)) {
-					return $this->error($db->getError());
+					return $this->error('创建数据库失败');
 				} else {
 					return $this->redirect('install/index/sql');
 				}
@@ -91,6 +92,7 @@ class Index extends \think\Controller {
 	}
 
 	public function sql() {
+        set_time_limit(0);
 		session('error', false);
 		$this->status['index']  = 'success';
 		$this->status['check']  = 'success';

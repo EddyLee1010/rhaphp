@@ -10,17 +10,19 @@
 
 namespace app\admin\controller;
 use think\Controller;
-use think\Cookie;
 use think\Db;
-use think\Request;
-use think\Session;
+use think\facade\Cookie;
+use think\facade\Request;
+use think\facade\Session;
+
 
 class Login extends Controller
 {
     public function index(){
-        if (Request::instance()->isAjax()){
-            $user_name = Request::instance()->post('user_name');
-            $password = Request::instance()->post('password');
+
+        if (Request::isAjax()){
+            $user_name = Request::post('user_name');
+            $password = Request::post('password');
             $result = Db::name('admin')
                 ->where(['admin_name'=>$user_name])
                 ->find();
@@ -29,7 +31,7 @@ class Login extends Controller
                 return ['code'=>-1,'msg'=>'用户不存在'];
             }
             if($result['password']==$inPWD){
-                Db::name('admin')->where(['admin_name'=>$user_name])->update(['ip'=>Request::instance()->ip(),'last_time'=>time()]);
+                Db::name('admin')->where(['admin_name'=>$user_name])->update(['ip'=>Request::ip(),'last_time'=>time()]);
                 session('admin',$result);
                 Cookie::forever('admin',$result);
                 return ['code'=>200,'msg'=>'登录成功!'];

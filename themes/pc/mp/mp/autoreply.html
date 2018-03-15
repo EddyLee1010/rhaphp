@@ -23,7 +23,7 @@
                 <col width="120">
                 <col >
                 <col width="100" >
-                <col width="120">
+                <col width="150">
             </colgroup>
                     <thead>
                     <tr>
@@ -41,6 +41,7 @@
                         <td>{if condition="$vo.status=='1'"}使用中{else/}已停用{/if}</td>
                         <td>
                             <div class="">
+                                <a class="rha-bt-a" href="javascript:;" onclick="editReply('{$vo.id}')">修改</a>
                                 {if condition="$vo.status=='1'"}
                                 <a class="rha-bt-a" href="javascript:;" onclick="updateReply('{$vo.id}','0')">停用</a>
                                 {else/}
@@ -53,7 +54,7 @@
                     {/volist}
                     </tbody>
                 </table>
-            {$data->render()}
+            {$data->render()|raw}
             {/case}
             {case value="news"}
                 <table class="layui-table" lay-skin="line">
@@ -62,7 +63,7 @@
                     <col width="150">
                     <col width="">
                     <col width="100" >
-                    <col width="120">
+                    <col width="150">
                     <thead>
                     <tr>
                         <th>关键词</th>
@@ -87,6 +88,7 @@
                         <td>{if condition="$vo.status=='1'"}使用中{else/}已停用{/if}</td>
                         <td>
                             <div class="">
+                                <a class="rha-bt-a" href="javascript:;" onclick="editReply('{$vo.id}')">修改</a>
                                 {if condition="$vo.status=='1'"}
                                 <a class="rha-bt-a" href="javascript:;" onclick="updateReply('{$vo.id}','0')">停用</a>
                                 {else/}
@@ -100,7 +102,7 @@
                     {/volist}
                     </tbody>
                 </table>
-        {$data->render()}
+        {$data->render()|raw}
             {/case}
         {case value="addon"}
         <table class="layui-table" lay-skin="line">
@@ -108,7 +110,7 @@
             <col width="200">
             <col width="" >
             <col width="100">
-            <col width="120">
+            <col width="150">
             <thead>
             <tr>
                 <th>关键词</th>
@@ -130,6 +132,7 @@
                 <td>{$vo.desc}</td>
                 <td>{if condition="$vo.status=='1'"}使用中{else/}已停用{/if}</td>
                 <td>
+                    <a class="rha-bt-a" href="javascript:;" onclick="editReply('{$vo.id}')">修改</a>
                     {if condition="$vo.status=='1'"}
                     <a class="rha-bt-a" href="javascript:;" onclick="updateReply('{$vo.id}','0')">停用</a>
                     {else/}
@@ -151,7 +154,7 @@
             <col width="">
             <col width="" >
             <col width="100">
-            <col width="120">
+            <col width="150">
             <thead>
             <tr>
                 <th>关键词</th>
@@ -169,6 +172,7 @@
                 <td>{$vo.url}</td>
                 <td>{if condition="$vo.status=='1'"}使用中{else/}已停用{/if}</td>
                 <td>
+                    <a class="rha-bt-a" href="javascript:;" onclick="editReply('{$vo.id}')">修改</a>
                     {if condition="$vo.status=='1'"}
                     <a class="rha-bt-a" href="javascript:;" onclick="updateReply('{$vo.id}','0')">停用</a>
                     {else/}
@@ -181,7 +185,7 @@
             {/volist}
             </tbody>
         </table>
-        {$data->render()}
+        {$data->render()|raw}
         {/case}
         {case value="image"}
         <table class="layui-table" lay-skin="line">
@@ -189,7 +193,7 @@
             <col width="100">
             <col width="" >
             <col width="100">
-            <col width="120">
+            <col width="150">
             <thead>
             <tr>
                 <th>关键词</th>
@@ -214,6 +218,7 @@
 
                 <td>{if condition="$vo.status=='1'"}使用中{else/}已停用{/if}</td>
                 <td>
+                    <a class="rha-bt-a" href="javascript:;" onclick="editReply('{$vo.id}')">修改</a>
                     {if condition="$vo.status=='1'"}
                     <a class="rha-bt-a" href="javascript:;" onclick="updateReply('{$vo.id}','0')">停用</a>
                     {else/}
@@ -226,7 +231,7 @@
             {/volist}
             </tbody>
         </table>
-        {$data->render()}
+        {$data->render()|raw}
         {/case}
         {case value="video"}
         <table class="layui-table" lay-skin="line">
@@ -235,7 +240,7 @@
             <col width="" >
             <col width="" >
             <col width="100">
-            <col width="120">
+            <col width="150">
             <thead>
             <tr>
                 <th>关键词</th>
@@ -261,6 +266,7 @@
                 </td>
                 <td>{if condition="$vo.status=='1'"}使用中{else/}已停用{/if}</td>
                 <td>
+                    <a class="rha-bt-a" href="javascript:;" onclick="editReply('{$vo.id}')">修改</a>
                     {if condition="$vo.status=='1'"}
                     <a class="rha-bt-a" href="javascript:;" onclick="updateReply('{$vo.id}','0')">停用</a>
                     {else/}
@@ -274,7 +280,7 @@
             {/volist}
             </tbody>
         </table>
-        {$data->render()}
+        {$data->render()|raw}
         {/case}
         {case value="music"}
         <table class="layui-table" lay-skin="line">
@@ -283,7 +289,7 @@
             <col width="" >
             <col width="" >
             <col width="100">
-            <col width="120">
+            <col width="150">
             <thead>
             <tr>
                 <th>关键词</th>
@@ -305,6 +311,7 @@
                 <td>{$vo.content}</td>
                 <td>{if condition="$vo.status=='1'"}使用中{else/}已停用{/if}</td>
                 <td>
+                    <a class="rha-bt-a" href="javascript:;" onclick="editReply('{$vo.id}')">修改</a>
                     {if condition="$vo.status=='1'"}
                     <a class="rha-bt-a" href="javascript:;" onclick="updateReply('{$vo.id}','0')">停用</a>
                     {else/}
@@ -317,7 +324,7 @@
             {/volist}
             </tbody>
         </table>
-        {$data->render()}
+        {$data->render()|raw}
         {/case}
         {/switch}
     </div>
@@ -360,6 +367,23 @@
                         layer.alert(res.msg)
                     }
                 })
+        });
+    }
+    var layer;
+    layui.use('layer', function(){
+        var layer = layui.layer;
+    });
+    function editReply(id) {
+        layer.open({
+            type: 2,
+            title: '修改回复内容',
+            shadeClose: true,
+            shade: 0.5,
+            area: ['680px', '550px'],
+            content: '{:url("mp/mp/editAutoreply")}?id='+id,
+            cancel: function(index, layero){
+                window.location.reload();
+            }
         });
     }
 

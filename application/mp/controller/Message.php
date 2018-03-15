@@ -11,7 +11,7 @@
 namespace app\mp\controller;
 
 use app\common\model\MpMsg;
-use think\Request;
+use think\facade\Request;
 
 class Message extends Base
 {
@@ -32,7 +32,7 @@ class Message extends Base
      * @return \think\response\View
      */
     public function replyMsg($openid,$msg_content=''){
-        if(Request::instance()->isPost()){
+        if(Request::isPost()){
            if(empty($msg_content)){
                ajaxMsg(0,'消息不能为空');
            }
@@ -72,7 +72,7 @@ class Message extends Base
 
 
     public function delMsg($id,$openid){
-        if(Request::instance()->isAjax()){
+        if(Request::isAjax()){
             $model =new MpMsg();
             if($model->where(['msg_id'=>$id,'openid'=>$openid,'mpid'=>$this->mid])->delete()){
                 ajaxMsg(1,'操作成功');

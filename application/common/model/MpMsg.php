@@ -12,8 +12,8 @@ namespace app\common\model;
 
 
 use think\Model;
-use think\Request;
-use think\Url;
+use think\facade\Request;
+use think\facade\Url;
 
 class MpMsg extends Model
 {
@@ -52,7 +52,7 @@ class MpMsg extends Model
         foreach ($msgContent as $key =>$val) {
             switch ($val['type']) {
                 case 'voice':
-                    if(Request::instance()->isMobile()){
+                    if(Request::isMobile()){
                         $msgContent[$key]['content']='[语音消息:暂不支持手机端播放]';
                     }else{
                         if($msg_voice=getMedia($val['content'])){
@@ -78,7 +78,7 @@ class MpMsg extends Model
 
                     break;
                 case 'video':
-                    if(Request::instance()->isMobile()){
+                    if(Request::isMobile()){
                         $msgContent[$key]['content']='[视频消息:暂不支持手机端播放]';
                     }else {
                         if ($msg_video = getMedia($val['content'])) {

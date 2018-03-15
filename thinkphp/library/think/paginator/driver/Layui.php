@@ -1,9 +1,8 @@
 <?php
 /**
- * Created by PhpStorm.
  * User: Geeson myrhzq@qq.com
- * Date: 2017/7/6
- * Time: 下午1:14 中国·上海
+ * Date: 2018/1/2
+ * Time: 下午11:23 中国·上海
  */
 
 namespace think\paginator\driver;

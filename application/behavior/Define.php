@@ -11,18 +11,22 @@
 namespace app\behavior;
 
 
-use think\Request;
+use think\facade\Env;
+use think\facade\Request;
+
 
 class Define
 {
     public function run()
     {
-        $module = strtolower(Request::instance()->module());
-        $Controller = strtolower(Request::instance()->controller());
-        $action = strtolower(Request::instance()->action());
+
+        $module = strtolower(Request::module());
+        $Controller = strtolower(Request::controller());
+        $action = strtolower(Request::action());
         define('MODULE_NAME', $module);
         define('CONTROLLER_NAME', $Controller);
         define('ACTION_NAME', $action);
+        
 
     }
 }

@@ -8,22 +8,21 @@
 // +----------------------------------------------------------------------
 
 namespace app\behavior;
-
-
-use think\Config;
-use think\Request;
+use think\facade\Config;
+use think\facade\Request;
 
 class ChangeTheme
 {
 
     public function run()
     {
+
         $defaultViewPath = Config::get('template.view_path');
         if ($defaultViewPath != '') {
-            $module = strtolower(Request::instance()->module());
-            $pcPath = Config::get('theme.pc');
-            $mobilePath = Config::get('theme.mobile');
-            if (Request::instance()->isMobile()) {
+            $module = strtolower(Request::module());
+            $pcPath = Config::get('template.theme.pc');
+            $mobilePath = Config::get('template.theme.mobile');
+            if (Request::isMobile()) {
                 if($mobilePath==''){
                     $themePath = $pcPath;
                 }else{
@@ -39,7 +38,7 @@ class ChangeTheme
         }else{
             $path='/static';
         }
-        Config::set('view_replace_str.__STATIC__', $path);
+        Config::set('template.tpl_replace_string.__STATIC__', $path);
     }
 
 }

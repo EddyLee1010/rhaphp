@@ -9,8 +9,8 @@
 
 
 namespace app\mp\controller;
-use think\Config;
-use think\Request;
+use think\facade\Config;
+use think\facade\Request;
 
 class Call
 {
@@ -20,7 +20,7 @@ class Call
     private $adParam;
     public function __construct()
     {
-        $param = Request::instance()->param();
+        $param = Request::param();
         $this->adParam = $param;
         session('addonRule', $param);
         $this->addon = $param['addon'];
@@ -32,7 +32,7 @@ class Call
  * 应用调起
  * @author geeson myrhzq@qq.com
  */
-    public function run()
+    public function run(Request $request)
     {
         if ($this->addon && $this->col && $this->act) {
             session('addonName', $this->addon);
@@ -40,16 +40,16 @@ class Call
             if(file_exists($commonFile=ADDON_PATH.$this->addon .'/Common.php')){
                include $commonFile;
             }
-            Config::set('view_replace_str.__ADDONSTATIC__','/addons/'.$this->addon.'/static/');
+            Config::set('template.tpl_replace_string.__ADDONSTATIC__','/addons/'.$this->addon.'/static/');
             if (file_exists($filename)) {
-                \think\Loader::import($this->addon . '.controller.' . ucfirst($this->col), ADDON_PATH, '.php');
+                include_once ADDON_PATH.$this->addon.'/controller/'. ucfirst($this->col).'.php';
                 $class = '\addons\\' . $this->addon . '\controller\\' . ucfirst($this->col);
                 if (class_exists($class)) {
                     $model = new $class;
                     if (!method_exists($model, $this->act)) {
                         abort(500, lang($this->act.'方法不存在'));
                     }
-                    call_user_func_array([$model, $this->act], [Request::instance()]);
+                    return call_user_func_array([$model, $this->act],[]);
                 } else {
                     abort(500, lang($class.'不存在'));
                 }

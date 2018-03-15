@@ -4,13 +4,12 @@ namespace addons\redPack\controller;
 
 use addons\redPack\model\Redpack;
 use app\common\controller\Addon;
-use think\Request;
+use think\facade\Request;
 
 class Index extends Addon
 {
     public $adminLogin =true;
     public function index(){
-
         $input =input();
         $status=isset($input['status'])?$input['status']:'1';
         $model = new Redpack();
@@ -27,7 +26,7 @@ class Index extends Addon
     }
 
     public function delRedPack(){
-        if(Request::instance()->isPost()){
+        if(Request::isPost()){
             $input =input();
             $model = new Redpack();
             if($model->save(['status'=>'0'],['addon'=>$input['addon'],'mpid'=>$input['mid']])){

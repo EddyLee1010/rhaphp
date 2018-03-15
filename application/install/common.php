@@ -10,7 +10,7 @@ function check_env()
 {
     $items = array(
         'os' => array('操作系统', '不限制', '类Unix', PHP_OS, 'success'),
-        'php' => array('PHP版本', '5.5.0', '5.5+', PHP_VERSION, 'success'),
+        'php' => array('PHP版本', '5.6.0', '5.6+', PHP_VERSION, 'success'),
         'upload' => array('附件上传', '不限制', '2M+', '未知', 'success'),
         'gd' => array('GD库', '2.0', '2.0+', '未知', 'success'),
         'disk' => array('磁盘空间', '30M', '不限制', '未知', 'success'),
@@ -55,6 +55,8 @@ function check_dirfile()
         array('dir', '可写', 'success', 'addons'),
         array('dir', '可写', 'success', 'application'),
         array('dir', '可写', 'success', 'data'),
+        array('dir', '可写', 'success', 'config'),
+        array('dir', '可写', 'success', 'runtime'),
         array('dir', '可写', 'success', 'uploads'),
 
     );
@@ -72,10 +74,7 @@ function check_dirfile()
                     session('error', true);
                 }
             }
-        } else {
-
             if(file_exists(ROOT_PATH . $val[3])) {
-
                 if(!is_writable(ROOT_PATH . $val[3])) {
                     $val[1] = '不可写';
                     $val[2] = 'error';
@@ -138,7 +137,7 @@ function write_config($config)
         file_put_contents(APP_PATH . '/install.lock', 'ok');
 
         //写入应用配置文件
-        if (file_put_contents(APP_PATH . '/database.php', $conf)) {
+        if (file_put_contents(APP_PATH . '../config/database.php', $conf)) {
             show_msg('配置文件写入成功');
         } else {
             show_msg('配置文件写入失败！', 'error');
@@ -173,7 +172,16 @@ function create_tables($db, $prefix = '')
         $value = trim($value);
         if (empty($value)) continue;
         if (substr($value, 0, 12) == 'CREATE TABLE') {
-            $name = preg_replace("/^CREATE TABLE `(\w+)` .*/s", "\\1", $value);
+           // $name = preg_replace("/^CREATE TABLE `(\w+)` .*/s", "\\1", $value);
+            $name='';
+            preg_match('|EXISTS `(.*?)`|',$value,$outValue1);
+            preg_match('|TABLE `(.*?)`|',$value,$outValue2);
+            if(isset($outValue1[1]) && !empty($outValue1[1])){
+                $name=$outValue1[1];
+            }
+            if(isset($outValue2[1]) && !empty($outValue2[1])){
+                $name=$outValue2[1];
+            }
             $msg = "创建数据表{$name}";
             if (false !== $db->execute($value)) {
                 show_msg($msg . '...成功');
@@ -182,7 +190,7 @@ function create_tables($db, $prefix = '')
                 session('error', true);
             }
         } else {
-            $db->query($value);
+            $db->execute($value);
         }
 
     }
@@ -199,7 +207,7 @@ function register_administrator($db, $prefix, $admin)
         "('1', '[NAME]', '[PASS]','1','[IP]','[TIME]','[STR]','1');";
     $sql = str_replace(
         array('[PREFIX]', '[NAME]', '[PASS]','[IP]','[TIME]','[STR]'),
-        array($prefix, $admin['username'], $password, \think\Request::instance()->ip(), time(), $salt),
+        array($prefix, $admin['username'], $password, \think\facade\Request::ip(), time(), $salt),
         $sql);
     $db->execute($sql);
     show_msg('创始人帐号注册完成！');
@@ -212,8 +220,9 @@ function register_administrator($db, $prefix, $admin)
 function show_msg($msg, $class = 'primary')
 {
     echo "<script type=\"text/javascript\">showmsg(\"{$msg}\", \"{$class}\")</script>";
-    flush();
-    ob_flush();
+
+    //ob_flush();
+    //flush();
 }
 
 /**

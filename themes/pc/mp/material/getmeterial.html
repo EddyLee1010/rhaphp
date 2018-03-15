@@ -19,10 +19,10 @@
         <div class="layui-tab-content">
             {switch name="$type"}
                 {case value="image"}
-                    <div class="layui-tab-item layui-show">
+                    <div class="layui-tab-item meterial-Lists-li layui-show">
                         <ul>
                             {volist name="material" id="v"}
-                                <li onclick="returnV('{$v.url}','{$param}','image')" style="display: inline-block; width: 120px;cursor:pointer;"><img style="width: 120px;height: 120px;" src="{$v.url}"> </li>
+                                <li class="meterial-Lists-li" onclick="returnV('{$v.url}','{$param}','image')" style="display: inline-block; width: 120px;cursor:pointer;"><img style="width: 120px;height: 120px;" src="{$v.url}"> </li>
                             {/volist}
                         </ul>
                     </div>
@@ -82,7 +82,7 @@
         </div>
     </div>
     <div class="page">
-        {$page}
+        {$page|raw}
     </div>
 </div>
 <script>
@@ -115,6 +115,7 @@
 function returnV(value,paramName,type) {
     var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
     parent.parent.controllerByVal(value,paramName,type);
+    parent.controllerByVal(value,paramName,type);
     parent.layer.close(index);
 }
 

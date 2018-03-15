@@ -15,6 +15,7 @@ use think\Model;
 
 class MpReply extends Model
 {
+    protected $pk='reply_id';
     /**
      * @param array $where
      * @param string $order

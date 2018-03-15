@@ -6,7 +6,6 @@
 <a href="{:url('qrcodeAdd')}" id="addkw" class="layui-btn layui-btn-normal layui-btn-sm rha-nav-title">增加二维码</a>
 {/block}
 {block name="body"}
-{CSS href="/public/static/mp/css/custom_menu.css" /}
 <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
     <ul class="layui-tab-title">
         <li {eq name="type" value="list"}class="layui-this"{/eq} ><a href="{:url('mp/Mp/qrcode',['type'=>'list'])}">二维码列表</a></li>
@@ -36,23 +35,24 @@
                 </div></td>
                 <td>{$vo.scene_name}</td>
                 <td>{$vo.keyword}</td>
-                <td>{if condition="$vo.qr_type neq '0'"}临时
+                <td>{if condition="$vo.qr_type eq '0'"}临时
                     {else /} 永久
                     {/if}</td>
-                <td>{if condition="$vo.qr_type neq '0'"}{$vo.create_time}
+                <td>{if condition="$vo.qr_type eq '0'"}{$vo.create_time}
                     {else /} 长期有效
                     {/if}</td>
                 <td>
                     {$vo.short_url}
                 </td>
                 <td>
+                    <a class="rha-bt-a" href="javascript:;" onclick="delQrcode('{$vo.id}')">删除</a>
                     <a target="_blank" href="{$vo.short_url}" class="rha-bt-a">查看</a>
                 </td>
             </tr>
             {/volist}
             </tbody>
         </table>
-        {$data->render()}
+        {$data->render()|raw}
         {/case}
         {case value="statistics"}
         <table class="layui-table" lay-skin="line">
@@ -81,13 +81,13 @@
                 <td>{$vo.scan_count}</td>
                 <td>{$vo.gz_count}</td>
                 <td>
-                    <a target="_blank" href="{:url('qrcode',['scene_id'=>$vo.scene_id,'type'=>'friend'])}" class="rha-bt-a">查看增加粉丝</a>
+                    <a href="{:url('qrcode',['scene_id'=>$vo.scene_id,'type'=>'friend'])}" class="rha-bt-a">查看增加粉丝</a>
                 </td>
             </tr>
             {/volist}
             </tbody>
         </table>
-        {$data->render()}
+        {$data->render()|raw}
         {/case}
         {case value="friend"}
         <table class="layui-table" lay-skin="line">
@@ -112,9 +112,34 @@
             {/volist}
             </tbody>
         </table>
-        {$data->render()}
+        {$data->render()|raw}
         {/case}
         {/switch}
     </div>
 </div>
+<script>
+    function delQrcode(id) {
+        layui.use('layer', function(){
+            var layer = layui.layer;
+            layer.confirm('你确定需要删除吗？', {
+                btn: ['是','不'] //按钮
+            }, function(){
+                $.post("{:url('mp/Mp/delQrcode')}",{'id':id},function (res) {
+                    if(res.status==1){
+                        layer.alert(res.msg,function (index) {
+                            window.location.reload();
+                            layer.close(index);
+                        })
+
+                    }else{
+                        layer.alert(res.msg)
+                    }
+                })
+            }, function(){
+
+            });
+        });
+
+    }
+</script>
 {/block}

@@ -14,7 +14,7 @@ class Jssdk
 {
     public function run($param=null){
         $mp=getMpInfo();
-        Loader::import('Jssdk.jssdk',EXTEND_PATH,'.php');
+        include_once EXTEND_PATH.'Jssdk/jssdk.php';
         $jssdk=new \JSSDK($mp['appid'],$mp['appsecret']);
         $wx= $jssdk->getSignPackage();
         $httpType=getHttpType();

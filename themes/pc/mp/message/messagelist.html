@@ -49,7 +49,7 @@
         {/volist}
         </tbody>
     </table>
-    {$msgList->render()}
+    {$msgList->render()|raw}
 </div>
 <script>
     layui.use('form', function(){

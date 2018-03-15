@@ -9,9 +9,9 @@
 namespace app\admin\controller;
 
 
-use think\Config;
+use think\facade\Config;
 use think\Db;
-use think\Request;
+use think\facade\Request;
 
 class Upgrade extends Base
 {
@@ -34,7 +34,7 @@ class Upgrade extends Base
 
     public function toUp()
     {
-        if (Request::instance()->isAjax()) {
+        if (Request::isAjax()) {
             $info = json_decode($data = $this->httpQueryByRhaService('toUp'), true);
             if (!empty($info) && is_array($info) && isset($info['code'])) {
                 return $info;
@@ -90,7 +90,7 @@ class Upgrade extends Base
 
     public function upVersion(){
         $conf_content = file_get_contents(APP_PATH . 'copyright.php');
-        $config = \think\Config::load(APP_PATH . 'copyright.php');
+        $config = Config::load(APP_PATH . 'copyright.php');
         $new_version_file=ROOT_PATH . '/data/version.txt';
         if(is_file($new_version_file)){
             $new_version= trim(file_get_contents($new_version_file));
@@ -105,7 +105,7 @@ class Upgrade extends Base
 
     public function httpQueryByRhaService($method = 'index', $token = '', $data = [])
     {
-        $config = \think\Config::load(APP_PATH . 'copyright.php');
+        $config = Config::load(APP_PATH . 'copyright.php');
         if (isset($config['copyright']['version'])) {
             $version = $config['copyright']['version'];
         } else {

@@ -9,6 +9,7 @@
     <meta name="description" content="">
     <title>RhaPHP 二哈公众号管理系统</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href="__STATIC__/admin/images/favicon.ico" rel="shortcut icon" type="image/x-icon" />
     {CSS href="__STATIC__/admin/css/admin_base.css" /}
     {js href='__STATIC__/jquery/jquery-1.11.0.min.js' /}
     {js href='__STATIC__/layui/layui.js' /}
@@ -58,7 +59,7 @@
         <div class="menu">
             {volist name="menu" id="t"}
             <dl>
-                <dt><i class="type-ico ico-trade rha-icon {eq name="t['shows']" value="1"}{/eq}">{$t.icon}</i>{$t.name}</dt>
+                <dt><i class="type-ico ico-trade rha-icon {eq name="t['shows']" value="1"}{/eq}">{$t.icon|raw}</i>{$t.name}</dt>
                 {volist name="$t['child']" id="c"}
                 <dd class="{eq name="c['shows']" value="1"}selected{/eq}"><a href="{:url($c['url'])}">{$c.name}</a></dd>
                 {/volist}
@@ -103,15 +104,16 @@
             shadeClose: true,
             shade: 0.8,
             area: ['750px', '480px'],
-            content: '{:getHostDomain()}/{:url("mp/Material/getMeterial","","")}/type/'+type+'/param/'+paramName //iframe的url
+            content: '{:getHostDomain()}{:url("mp/Material/getMeterial","","")}/type/'+type+'/param/'+paramName //iframe的url
         });
     }
     function controllerByVal(value,paramName,type) {
+        
         $('.form_'+paramName).attr('src',value);
         $("input[name="+paramName+"]").val(value);
     }
     $(function () {
-         setInterval(getMsgTotal,10000);
+         setInterval(getMsgTotal,20000);
         function getMsgTotal() {
             $.get("{:url('mp/Message/getMsgStatusTotal')}",{},function (res) {
                 if(res.msgTotal==0){

@@ -28,7 +28,7 @@
         {/volist}
     </ul>
 </div>
-    {$msgList->render()}
+    {$msgList->render()|raw}
 <script>
     function replyMsg(url) {
         window.location.href=url;

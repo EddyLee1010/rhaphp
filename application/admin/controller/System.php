@@ -10,18 +10,20 @@
 
 namespace app\admin\controller;
 
-use think\Cache;
+use think\exception\ErrorException;
+use think\facade\Cache;
 use think\Db;
-use think\Request;
-use think\Session;
+use think\facade\Env;
+use think\facade\Request;
+use think\facade\Session;
 
 class System extends Base
 {
 
-    public function _initialize()
+    public function initialize()
     {
 
-        parent::_initialize();
+        parent::initialize();
 
     }
 
@@ -34,7 +36,7 @@ class System extends Base
     public function menuList()
     {
         $allMenu = Db::name('menu')->order('sort ASC')->select();
-        $menuList=\Tree::makeTree($allMenu);
+        $menuList = \Tree::makeTree($allMenu);
         $this->assign('menuList', $menuList);
 
         return view();
@@ -42,7 +44,7 @@ class System extends Base
 
     public function addMenu()
     {
-        if (Request::instance()->isPost()) {
+        if (Request::isPost()) {
             $_data = input('post.');
             unset($_data['mid']);
             if (Db::name('menu')->insert($_data)) {
@@ -60,7 +62,7 @@ class System extends Base
 
     public function delMenu($id)
     {
-        if (Request::instance()->isAjax()) {
+        if (Request::isAjax()) {
             Db::name('menu')->where(['id' => $id])->delete();
             ajaxMsg('1', '成功删除');
         }
@@ -69,7 +71,7 @@ class System extends Base
     public function updateMenu($id)
     {
         $this->assign('menu_title', '更改菜单');
-        if (Request::instance()->isAjax()) {
+        if (Request::isAjax()) {
             Db::name('menu')->where(['id' => $id])->update(input('post.'));
             ajaxMsg(1, '更新成功');
 
@@ -86,7 +88,7 @@ class System extends Base
 
     public function updateSort()
     {
-        if (Request::instance()->isAjax()) {
+        if (Request::isAjax()) {
             $_data = input();
             foreach ($_data as $key => $val) {
                 if (!empty($_V = explode('_', $key))) {
@@ -106,12 +108,12 @@ class System extends Base
 
     public function addAdminMember()
     {
-        if (Request::instance()->isAjax()){
+        if (Request::isAjax()) {
             $_data = input();
             if ($_data['password'] != $_data['repassword']) {
                 ajaxMsg(0, '两次密码不匹配');
             }
-            $S=getAdmin();
+            $S = getAdmin();
             if ($S['id'] != $this->admin_id) {
                 ajaxMsg('0', '你无权操作');
             }
@@ -120,19 +122,19 @@ class System extends Base
 
                 $rand_str = rand_string();
                 $password = md5($_data['password'] . $rand_str);
-                $data['admin_name']=$_data['admin_name'];
-                $data['password']=$password;
-                $data['rand_str']=$rand_str;
-                $data['admin_id']=$this->admin_id;
-                if(Db::name('admin')->insert($data)){
+                $data['admin_name'] = $_data['admin_name'];
+                $data['password'] = $password;
+                $data['rand_str'] = $rand_str;
+                $data['admin_id'] = $this->admin_id;
+                if (Db::name('admin')->insert($data)) {
                     ajaxMsg(1, '操作成功');
-                }else{
+                } else {
                     ajaxMsg(0, '操作失败');
                 }
             } else {
                 ajaxMsg(0, '登录账户已经存在');
             }
-        }else{
+        } else {
             return view();
         }
 
@@ -161,7 +163,7 @@ class System extends Base
 
     public function updatePwd($id)
     {
-        if (Request::instance()->isAjax()) {
+        if (Request::isAjax()) {
             $_data = input();
             if ($_data['password'] != $_data['repassword']) {
                 ajaxMsg(0, '两次密码不匹配');
@@ -172,17 +174,17 @@ class System extends Base
                 if ($result['admin_id'] != $this->admin_id) {
                     ajaxMsg('0', '你无权操作');//禁用成员不属于当前管理员
                 }
-                $S_admin=getAdmin();
-                if($S_admin['id']!=$this->admin_id){//不是超级管理员
-                    if($id!=$S_admin['id']){
+                $S_admin = getAdmin();
+                if ($S_admin['id'] != $this->admin_id) {//不是超级管理员
+                    if ($id != $S_admin['id']) {
                         ajaxMsg('0', '只能超级管理员更改其它成员密码');
                     }
                 }
                 $rand_str = rand_string();
                 $password = md5($_data['password'] . $rand_str);
-                if(Db::name('admin')->where(['id' => $id, 'admin_id' => $this->admin_id])->update(['password' => $password,'rand_str'=>$rand_str])){
+                if (Db::name('admin')->where(['id' => $id, 'admin_id' => $this->admin_id])->update(['password' => $password, 'rand_str' => $rand_str])) {
                     ajaxMsg(1, '操作成功');
-                }else{
+                } else {
                     ajaxMsg(0, '操作失败');
                 }
 
@@ -195,30 +197,35 @@ class System extends Base
         }
     }
 
-    public function cacheClear(){
+    public function cacheClear()
+    {
         Cache::clear();
-        if($this->clearDir()==false){
+        $path = Env::get('runtime_path');
+        if ($this->delDirAndFile($path) == false) {
             ajaxMsg(0, '清空缓存失败，请检查runtime目录是否有删除权限。');
-        }else{
+        } else {
             ajaxMsg(1, '清空缓存成功');
         }
 
     }
-    private function clearDir($path=RUNTIME_PATH){
+
+    private function delDirAndFile($path, $delDir = FALSE)
+    {
         $handle = opendir($path);
-        while(($item = readdir($handle)) !== false){
-            if($item != '.' and $item != '..'){
-                if(is_dir($path.'/'.$item)){
-                    $this->clearDir($path.'/'.$item);
-                }else{
-                    if(!unlink($path.'/'.$item)){
-                        return false;
-                    }
-                }
+        if ($handle) {
+            while (false !== ($item = readdir($handle))) {
+                if ($item != '.' && $item != '..')
+                    is_dir("$path/$item") ? $this->delDirAndFile("$path/$item", $delDir) : unlink("$path/$item");
+            }
+            closedir($handle);
+            if ($delDir)
+                return rmdir($path);
+        } else {
+            if (file_exists($path)) {
+                return unlink($path);
             }
         }
-        closedir( $handle );
-        return rmdir($path);
+        return true;
     }
 
 }

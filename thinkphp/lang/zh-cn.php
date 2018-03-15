@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2017 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -85,6 +85,7 @@ return [
 
     // Validate Error Message
     ':attribute require'                                        => ':attribute不能为空',
+    ':attribute must'                                           => ':attribute必须',
     ':attribute must be numeric'                                => ':attribute必须是数字',
     ':attribute must be integer'                                => ':attribute必须是整数',
     ':attribute must be float'                                  => ':attribute必须是浮点数',

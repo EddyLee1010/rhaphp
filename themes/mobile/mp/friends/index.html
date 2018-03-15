@@ -1,6 +1,5 @@
 {extend name="../admin/common/base" /}
 {block name="body"}
-{CSS href="/public/static/mp/css/custom_menu.css" /}
 <style>
     #layui-laydate17{}
     .layui-laydate-range{width: inherit;}
@@ -65,14 +64,14 @@
             </div>
         </td>
         <td>{$v.nickname}</td>
-        <td>{$v.subscribe_time|date="y-m-d",###}</td>
+        <td>{$v.subscribe_time|date="y-m-d"}</td>
         <td><a class="rha-bt-a" href="{:url('Message/replyMsg',['openid'=>$v.openid])}">发送消息</a></td>
     </tr>
     {/volist}
     </tbody>
 </table>
 </form>
-{$friendList->render()}
+{$friendList->render()|raw}
 <script>
     layui.use('laydate', function() {
         var laydate = layui.laydate;

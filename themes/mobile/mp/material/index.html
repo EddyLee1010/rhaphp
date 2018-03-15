@@ -60,7 +60,7 @@
                         </li>
                         {/volist}
                     </ul>
-                    {$page}
+                    {$page|raw}
                     {/case}
                     {case value="voice"}
                     <table class="layui-table" lay-skin="line">
@@ -90,7 +90,7 @@
                         {/volist}
                         </tbody>
                     </table>
-                    {$data->render()}
+                    {$data->render()|raw}
                     {/case}
                     {case value="image"}
                     <ul class="type_image">
@@ -111,7 +111,7 @@
 
                     {/volist}
                     </ul>
-                    {$data->render()}
+                    {$data->render()|raw}
                     {/case}
                     {case value="video"}
                     <table class="layui-table" lay-skin="line">
@@ -141,7 +141,7 @@
                         {/volist}
                         </tbody>
                     </table>
-                    {$data->render()}
+                    {$data->render()|raw}
                     {/case}
                     {/switch}
                 </div>
@@ -199,7 +199,7 @@
                 shadeClose: true,
                 shade: 0.5,
                 area: ['680px', '200px'],
-                content: '{:getHostDomain()}/{:url("mp/Material/sycMaterial","","")}/type/'+type+'/offset/0',
+                content: '{:url("mp/Material/sycMaterial","","")}/type/'+type+'/offset/0',
                 cancel: function(index, layero){
                     window.location.reload();
                 }

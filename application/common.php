@@ -4,8 +4,6 @@
 // +----------------------------------------------------------------------
 // | [RhaPHP] 并不是自由软件,你可免费使用,未经许可不能去掉RhaPHP相关版权
 // +----------------------------------------------------------------------
-// | 官方网站：RhaPHP.com 任何企业和个人不允许对程序代码以任何形式任何目的再发布
-// +----------------------------------------------------------------------
 // | Author: Geeson <qimengkeji@vip.qq.com>
 // +----------------------------------------------------------------------
 
@@ -62,9 +60,10 @@ function getWechatObj($options = [], $mid = '')
             'encodingaeskey' => $mpInfo['encodingaeskey']
         );
     }
-    \think\Loader::import('wechatSdk.wechat', EXTEND_PATH, '.class.php');
+    include_once EXTEND_PATH . "wechatSdk/wechat.class.php";
     empty($options) ? $options = session('mp_options') : $options = $options;
     $weObj = new \Wechat($options);
+    $weObj->valid();
     $weObj->getRev();
     return $weObj;
 }
@@ -90,7 +89,7 @@ function getWechatActiveObj($mid = '')
             'encodingaeskey' => $mpInfo['encodingaeskey']
         );
     }
-    \think\Loader::import('wechatSdk.wechat', EXTEND_PATH, '.class.php');
+    include_once EXTEND_PATH . "wechatSdk/wechat.class.php";
     empty($options) ? $options = session('mp_options') : $options = $options;
     $weObj = new \Wechat($options);
     return $weObj;
@@ -221,10 +220,11 @@ function replyNews($new = [])
 
 function loadAdApi($name = null, $msg = [], $param = [])
 {
+    session('apiParam',$param);
     $filename = ADDON_PATH . $name . '/controller/Api.php';
     session('addonName', $name);
     if (file_exists($filename)) {
-        \think\Loader::import($name . '.controller.Api', ADDON_PATH, '.php');
+        include_once ADDON_PATH . $name . "/controller/Api.php";
         $class = '\addons\\' . $name . '\controller\Api';
         if (class_exists($class)) {
             $apiObj = new $class;
@@ -277,10 +277,10 @@ function sendGroupMassMessage($data)
  * 创建二维码ticket
  * @param int|string $scene_id 自定义追踪id,临时二维码只能用数值型
  * @param int $type 0:临时二维码；1:永久二维码(此时expire参数无效)；2:永久二维码(此时expire参数无效)
- * @param int $expire 临时二维码有效期，最大为1800秒
- * @return array('ticket'=>'qrcode字串','expire_seconds'=>1800,'url'=>'二维码图片解析后的地址')
+ * @param int $expire 临时二维码有效期，最大为604800秒
+ * @return array('ticket'=>'qrcode字串','expire_seconds'=>604800,'url'=>'二维码图片解析后的地址')
  */
-function get_qrcode($scene_id, $type = 0, $expire = 1800)
+function get_qrcode($scene_id, $type = 0, $expire = 604800)
 {
     $weObj = getWechatActiveObj();
     $result = $weObj->getQRCode($scene_id, $type, $expire);
@@ -332,7 +332,7 @@ function getMpInfo($mid = '')
     if ($mid) {
 //        $mpinfoCahe = \think\Cache::get($mpInfo);
 //        if (empty($mpinfoCahe)) {
-        $mp = \think\Db::name('mp')->where(['id' => $mid])->find();
+        $mp = \think\Db::name('mp')->where('id', '=', $mid)->find();
         if (!empty($mp)) {
             //  \think\Cache::set($mpInfo, $mp, 10);
             return $mp;
@@ -525,18 +525,18 @@ function addonUrl($url = '', $vars = '', $suffix = true, $domain = false)
         $addonAction = isset($addonRule['act']) ? $addonRule['act'] : '';
         $node = '';
         if ($url == '') {
-            $node = $addonName . DS . $addonController . DS . $addonAction;
+            $node = $addonName . '/' . $addonController . '/' . $addonAction;
         } else {
             $nodeArr = array_values(array_filter(explode('/', $url)));
             switch (count($nodeArr)) {
                 case 1:
-                    $node = $addonName . DS . $addonController . DS . $nodeArr[0];
+                    $node = $addonName . '/' . $addonController . '/' . $nodeArr[0];
                     break;
                 case 2:
-                    $node = $addonName . DS . $nodeArr[0] . DS . $nodeArr[1];
+                    $node = $addonName . '/' . $nodeArr[0] . '/' . $nodeArr[1];
                     break;
                 case 3:
-                    $node = $node = $nodeArr[0] . DS . $nodeArr[1] . DS . $nodeArr[2];
+                    $node = $node = $nodeArr[0] . '/' . $nodeArr[1] . '/' . $nodeArr[2];
                     break;
             }
         }
@@ -549,7 +549,7 @@ function addonUrl($url = '', $vars = '', $suffix = true, $domain = false)
                 $vars = ['mid' => $mid];
             }
         }
-        $url = \think\Url::build(ADDON_ROUTE . $node, $vars, $suffix, $domain);
+        $url = \think\facade\Url::build(ADDON_ROUTE . $node, $vars, $suffix, $domain);
         return $url = str_replace('.' . config('template.view_suffix'), '', $url);
 
     }
@@ -563,7 +563,7 @@ function addonUrl($url = '', $vars = '', $suffix = true, $domain = false)
  */
 function hook($name = '', $params = [])
 {
-    \think\Hook::listen($name, $params);
+    think\facade\Hook::listen($name, $params);
 }
 
 /*
@@ -1199,15 +1199,27 @@ function executeSql($sqlPath)
     $sql = str_replace("\r", "\n", $sql);
     $sql = explode(";\n", $sql);
     $orginal = 'rh_';
-    $prefix = \think\Config::get('database.prefix');
+    $prefix = \think\facade\Config::get('database.prefix');
     $sql = str_replace("{$orginal}", "{$prefix}", $sql);
     $model = new \app\common\model\Addons();
     foreach ($sql as $value) {
         $value = trim($value);
         if (!empty($value)) {
             if (substr($value, 0, 12) == 'CREATE TABLE') {
-                $name = preg_replace("/^CREATE TABLE `(\w+)` .*/s", "\\1", $value);
-                $res = $model->execute("SHOW TABLES LIKE '" . $name . "'");
+                // $name = preg_replace("/^CREATE TABLE `(\w+)` .*/s", "\\1", $value);
+                $name = '';
+                preg_match('|EXISTS `(.*?)`|', $value, $outValue1);
+                preg_match('|TABLE `(.*?)`|', $value, $outValue2);
+                if (isset($outValue1[1]) && !empty($outValue1[1])) {
+                    $name = $outValue1[1];
+                }
+                if (isset($outValue2[1]) && !empty($outValue2[1])) {
+                    $name = $outValue2[1];
+                }
+                if (!$name) {
+                    ajaxMsg('0', $name . ' SQL语句有误，获取不到表名');
+                }
+                $res = $model->query("SHOW TABLES LIKE '{$name}'");
                 if ($res) {
                     ajaxMsg('0', $name . '表，已经存在');
                 }
@@ -1251,7 +1263,7 @@ function get_server_ip()
  */
 function createQrcode($data = '', $file = false, $level = 'L', $size = 4)
 {
-    \think\Loader::import('phpqrcode.phpqrcode', EXTEND_PATH, '.php');
+    include_once EXTEND_PATH . 'phpqrcode/phpqrcode.php';
     header("Content-type: image/png");
     Qrcode::png($data, $file, $level, $size);
 }
@@ -1439,9 +1451,11 @@ function wxPayByJsApi($parment_id = '', $goods_tag = '', $trade_type = 'JSAPI')
         $input->SetTrade_type($trade_type);
         $input->SetOpenid($payment['openid']);
         $order = \WxPayApi::unifiedOrder($input);
+        unClient($payment['mpid']);
         if (isset($order['return_code'])) {
             if ($order['return_code'] == 'SUCCESS') {
                 $jsApiParameters = $tools->GetJsApiParameters($order);
+
                 if ($jsApiParameters == false) {
                     return ['errCode' => -1, 'errMsg' => '获取API参数失败'];
                 } else {
@@ -1470,6 +1484,7 @@ function queryOrder($order_number = '')
         $input = new \WxPayOrderQuery();
         $input->SetOut_trade_no($order_number);
         $orderRes = \WxPayApi::orderQuery($input);
+        unClient($payment['mpid']);
         if (!empty($orderRes)) {
             if (isset($orderRes['trade_state']) && $orderRes['trade_state'] == 'SUCCESS') {//已经支付
                 if ($payment['status'] == '0') {//订单状态未处理为成功
@@ -1520,6 +1535,13 @@ function wxpayNotify()
 }
 
 wxpayNotify();
+function unClient($mid = '')
+{
+    $sslcert = ROOT_PATH . 'data/' . $mid . '_' . '_apiclient_cert.pem';
+    $sslkey = ROOT_PATH . 'data/' . $mid . '_' . '_apiclient_key.pem';
+    @unlink($sslcert);
+    @unlink($sslkey);
+}
 
 /**
  * 现金红包
@@ -1546,7 +1568,7 @@ function sendRedpack($mid = '', $param = [], $addon = '')
         $redpackObj->setParments("max_value", isset($param['max_value']) ? $param['max_value'] : '100');//最大红包金额，单位分
         $redpackObj->setParments("total_num", isset($param['total_num']) ? $param['total_num'] : '1');//红包収放总人数
         $redpackObj->setParments("wishing", isset($param['wishing']) ? $param['wishing'] : '恭喜发财');//红包祝福诧
-        $redpackObj->setParments("client_ip", \think\Request::instance()->ip());//调用接口的机器 Ip 地址
+        $redpackObj->setParments("client_ip", \think\Request::ip());//调用接口的机器 Ip 地址
         $redpackObj->setParments("act_name", isset($param['act_name']) ? $param['act_name'] : '红包活动');//活动名称
         $redpackObj->setParments("remark", isset($param['remark']) ? $param['remark'] : '红包活动');//备注信息
         $redpackObj->setParments("nonce_str", getRandChar(32));//备注信息
@@ -1585,7 +1607,7 @@ function sendRedpack($mid = '', $param = [], $addon = '')
 function setWxpayConfig($mid)
 {
     if (!empty($config = getSetting($mid, 'wxpay'))) {
-        \think\Loader::import('wxpayAPI.wxPayApi', EXTEND_PATH, '.php');
+        include_once EXTEND_PATH . 'wxpayAPI/wxPayApi.php';
         \WxPayConfig::$APPID = $config['appid'];
         \WxPayConfig::$APPSECRET = $config['appsecret'];
         \WxPayConfig::$MCHID = $config['mchid'];
@@ -1627,7 +1649,8 @@ function url($url = '', $vars = '', $suffix = true, $domain = false)
             $vars = ['mid' => $mid];
         }
     }
-    return \think\Url::build($url, $vars, $suffix, $domain);
+
+    return \think\facade\Url::build($url, $vars, $suffix, $domain);
 }
 
 /**
@@ -1642,7 +1665,7 @@ function url($url = '', $vars = '', $suffix = true, $domain = false)
  */
 function singleSmsByTx($mid = '', $phoneNumber = '', $msg = '', $type = '0', $nationCode = '86', $extend = "", $ext = "")
 {
-    \think\Loader::import('Qcloud.Sms.Loader', EXTEND_PATH, '.php');
+    include_once EXTEND_PATH . 'Qcloud/Sms/Loader.php';
     if (!$conf = getSetting($mid, 'sms')) {
         return false;//没有配置信息参数
     }
@@ -1671,8 +1694,7 @@ function qiniuUpload($mid = '', $file = '', $key = '')
         if (!isset($st['qiniu']) && empty($st['qiniu'])) {
             return ['code' => 1, 'msg' => '请先配置七牛云存储参数'];
         } else {
-            \think\Loader::import('QiniuSdk.Qiniu.autoload', EXTEND_PATH, '.php');
-
+            include_once EXTEND_PATH . 'Qiniu/autoload.php';
             $client = Qiniu\Qiniu::create(array(
                 'access_key' => $st['qiniu']['accessKey'],
                 'secret_key' => $st['qiniu']['secretKey'],
@@ -1769,17 +1791,20 @@ function sendCustomMessage($data = [])
         return $result;
     }
 }
+
 /**
  * 获取临时素材(认证后的订阅号可用)
  * @param string $media_id 媒体文件id
  * @param boolean $is_video 是否为视频文件，默认为否
  * @return raw data
  */
-function getMedia($media_id,$is_video=false){
+function getMedia($media_id, $is_video = false)
+{
     $wxObj = getWechatActiveObj();
-    return $result=$wxObj->getMedia($media_id,$is_video=false);
+    return $result = $wxObj->getMedia($media_id, $is_video = false);
 
 }
+
 function httpQueryByRhaService($method = 'index', $token = '', $data = [])
 {
     $config = \think\Config::load(APP_PATH . 'copyright.php');
@@ -1823,6 +1848,87 @@ function getWxPayUrl($mid = '', $param = [])
         return ['code' => -1, 'msg' => '公众号标识ID不能为空'];
     }
     $str = http_build_query($param);
-    return getHostDomain() . \think\Url::build('service/payment/wxpay', '', false) . '/?mid=' . $mid . '&' . $str;
+    return getHostDomain() . \think\facade\Url::build('service/payment/wxpay', '', false) . '/?mid=' . $mid . '&' . $str;
+
+}
+
+/**【增加或者修复图文关键词内容】
+ * @author geeson rhaphp.com
+ * @param string $keyword 关键词
+ * @param string $title 标题
+ * @param string $picurl 封面URL
+ * @param string $desc 描述内容
+ * @param string $link 连接地址 （不需要域名），接受addonUrl()与 Url()函数地址
+ * @return bool
+ */
+function setMpKeywordByNews($keyword = '', $title = '', $picurl = '', $desc = '', $link = '')
+{
+    $mp = getMpInfo();
+    if (!$keyword || !$title || !$picurl || !$desc || !$link || !isset($mp['id'])) {
+        return false;//['status'=>0,'msg'=>'参数缺失'];
+    }
+    $data['mpid'] = $mp['id'];
+    $data['keyword'] = $keyword;
+    $data['title'] = $title;
+    $data['url'] = $picurl;
+    $data['content'] = $desc;
+    $data['link'] = getHostDomain() . $link;
+    $data['type'] = 'news';
+    $ruleModel = new \app\common\model\MpRule();
+    $replyMode = new \app\common\model\MpReply();
+    if ($result = $replyMode->alias('a')->where('a.link', $data['link'])
+        ->join('__MP_RULE__ b', 'b.reply_id=a.reply_id')
+        ->find()) {
+        if ($data['mpid'] != $result['mpid']) {
+            ajaxMsg(0, '回复关键词内容公众号标识与当前公众号标识不匹配');
+        }
+        $replyMode->allowField(true)->save($data, ['reply_id' => $result['reply_id']]);
+        $ruleModel->allowField(true)->save(['keyword' => $data['keyword']], ['reply_id' => $result['reply_id']]);
+        return true;
+    } else {
+        if ($res_1 = $replyMode->allowField(true)->save($data)) {
+            $data['reply_id'] = $replyMode->reply_id;
+            if (!$res_2 = $ruleModel->allowField(true)->save($data)) {
+                $replyMode::destroy(['reply_id' => $data['reply_id']]);
+            }
+        }
+        if ($res_1 && $res_2) {
+            return $replyMode->reply_id;
+        } else {
+            return false;
+        }
+    }
+
+
+}
+
+/**
+ * 【删除关键词回复内容】
+ * @author rhaphp.com
+ * @param string $reply_id
+ * @return bool
+ * @throws \think\db\exception\DataNotFoundException
+ * @throws \think\db\exception\ModelNotFoundException
+ * @throws \think\exception\DbException
+ */
+function delKeywordReply($reply_id = '')
+{
+    $mp = getMpInfo();
+    if (!isset($mp['id']) || empty($mp['id']) || !$reply_id) {
+        return false;//参数缺失
+    }
+    $ruleModel = new \app\common\model\MpRule();
+    $replyMode = new \app\common\model\MpReply();
+    $result = $ruleModel->where(['reply_id' => $reply_id])->find();
+
+    if (!empty($result)) {
+        if ($mp['id'] != $result['mpid']) {
+            ajaxMsg(0, '回复关键词内容公众号标识与当前公众号标识不匹配');
+        }
+        $replyMode->where(['reply_id' => $reply_id])->delete();
+        $ruleModel->where(['reply_id' => $reply_id])->delete();
+        return true;
+    }
+    return false;
 
 }

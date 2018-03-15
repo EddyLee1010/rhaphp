@@ -7,7 +7,7 @@ return array(
     'author' => 'Geeson',
     'logo' => 'logo.jpg',
     'entry_url' => 'touPiao/vote/index',
-    //  'install_sql' => 'install.sql',
+    'install_sql' => 'install.sql',
     'upgrade_sql' => '',
     'menu' => [
         [

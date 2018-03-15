@@ -4,8 +4,8 @@
 <div class="layui-tab">
     <ul class="layui-tab-title">
         <li {eq name="type" value="index"}class="layui-this"{/eq}> <a href="{:url('index')}">在使用</a></li>
-        <li {eq name="type" value="uninstall"}class="layui-this"{/eq}> <a href="{:url('index',['type'=>'uninstall'])}">卸载应用</a></li>
-        <li {eq name="type" value="notinstall"}class="layui-this"{/eq}><a href="{:url('index',['type'=>'notinstall'])}">安装应用</a></li>
+        <li {eq name="type" value="uninstall"}class="layui-this"{/eq}> <a href="{:url('index',['type'=>'uninstall'])}">停用应用</a></li>
+        <li {eq name="type" value="notinstall"}class="layui-this"{/eq}><a href="{:url('index',['type'=>'notinstall'])}">安装|卸载</a></li>
     </ul>
 </div>
 {switch name="type"}
@@ -68,8 +68,9 @@
             <td>{$vo.version}</td>
             <td>{:getAddonConfigByFile($vo['addon'],'version')}</td>
             <td>{$vo.author}</td>
-            <td>
-                <button class="layui-btn layui-btn-xs layui-btn-danger" onclick="closeApp('{$vo.addon}')">卸载</button>
+            <td width="90">
+                <button class="layui-btn layui-btn-xs" onclick="closeApp('{$vo.addon}')">停用</button>
+                <button class="layui-btn layui-btn-xs layui-btn-danger" onclick="wipeDataApp('{$vo.addon}')">还原</button>
             </td>
         </tr>
         {/volist}
@@ -100,7 +101,9 @@
         <td>{$vo.version}</td>
         <td>{:getAddonConfigByFile($vo['addon'])}</td>
         <td>{$vo.author}</td>
-        <td><button class="layui-btn layui-btn-xs " onclick="installApp('{$vo.addon}')">安装应用</button> </td>
+        <td width="110"><button class="layui-btn layui-btn-xs " onclick="installApp('{$vo.addon}')">安装|启用</button>
+            <button class="layui-btn layui-btn-xs layui-btn-danger" onclick="uninstallApp('{$vo.addon}')">卸载</button>
+        </td>
     </tr>
     {/volist}
     </tbody>
@@ -109,11 +112,15 @@
 {/switch}
 </div>
 <script>
+    var layer;
+    layui.use('layer', function(){
+        var layer = layui.layer;
+    });
     function installApp(name) {
-        layui.use('layer', function(){
-            var layer = layui.layer;
+            var loadIndex = layer.load(1)
             $.post("{:url('admin/app/install')}",{'name':name},function (res) {
                 if(res.status=='0'){
+                    layer.close(loadIndex)
                     layer.alert(res.msg);
                 }
                 if(res.status=='1'){
@@ -121,12 +128,14 @@
                         location.href="{:url('admin/app/index',['type'=>'notinstall'])}";
                     });
                 }
+            }).error(function (error) {
+                layer.alert('500 Internal Server Error');
+                layer.close(loadIndex)
             })
-        });
+            return false;
+
     }
     function upgrade(name) {
-        layui.use('layer', function(){
-            var layer = layui.layer;
             $.post("{:url('admin/app/upgrade')}",{'name':name},function (res) {
                 if(res.status=='0'){
                     layer.alert(res.msg);
@@ -137,11 +146,8 @@
                     });
                 }
             })
-        });
     }
     function closeApp(name) {
-        layui.use('layer', function(){
-            var layer = layui.layer;
             $.post("{:url('admin/app/close')}",{'name':name},function (res) {
                 if(res.status=='0'){
                     layer.alert(res.msg);
@@ -152,6 +158,58 @@
                     });
                 }
             })
+    }
+
+    function uninstallApp(name) {
+        layer.confirm('你确定卸载（'+name+'）此应用吗？点击确定将会清空此应用所有数据以及文件', {
+            btn: ['确定','不的']
+        }, function(load_index){
+            layer.close(load_index);
+            var index = layer.load(1,{
+                shade: [0.1,'#000']
+            });
+            $.post("{:url('admin/app/uninstall')}",{'name':name},function (res) {
+                if(res.status=='0'){
+                    layer.close(index)
+                    layer.alert(res.msg);
+                }
+                if(res.status=='1'){
+                    layer.msg(res.msg,{time:1000},function () {
+                        location.href="{:url('admin/app/index',['type'=>'notinstall'])}";
+                    });
+                }
+            }).error(function (error) {
+                layer.alert('500 Internal Server Error');
+                layer.close(index)
+            })
+        }, function(){
+
+        });
+    }
+    function wipeDataApp(name) {
+        layer.confirm('你确定还（'+name+'）此应用吗？点击确定将会清空数据以及还原未安装状态', {
+            btn: ['确定','不的']
+        }, function(load_index){
+            layer.close(load_index);
+            var index = layer.load(1,{
+                shade: [0.1,'#000']
+            });
+            $.post("{:url('admin/app/wipeData')}",{'name':name},function (res) {
+                if(res.status=='0'){
+                    layer.close(index)
+                    layer.alert(res.msg);
+                }
+                if(res.status=='1'){
+                    layer.msg(res.msg,{time:1000},function () {
+                        location.href="{:url('admin/app/index',['type'=>'uninstall'])}";
+                    });
+                }
+            }).error(function (error) {
+                layer.alert('500 Internal Server Error');
+                layer.close(index)
+            })
+        }, function(){
+
         });
     }
 </script>

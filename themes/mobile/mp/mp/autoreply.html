@@ -47,7 +47,7 @@
                     {/volist}
                     </tbody>
                 </table>
-            {$data->render()}
+            {$data->render()|raw}
             {/case}
             {case value="news"}
                 <table class="layui-table" lay-skin="line" lay-size="sm">
@@ -88,7 +88,7 @@
                     {/volist}
                     </tbody>
                 </table>
-        {$data->render()}
+        {$data->render()|raw}
             {/case}
         {case value="addon"}
         <table class="layui-table" lay-skin="line" lay-size="sm">
@@ -160,7 +160,7 @@
             {/volist}
             </tbody>
         </table>
-        {$data->render()}
+        {$data->render()|raw}
         {/case}
         {case value="image"}
         <table class="layui-table" lay-skin="line" lay-size="sm">
@@ -200,7 +200,7 @@
             {/volist}
             </tbody>
         </table>
-        {$data->render()}
+        {$data->render()|raw}
         {/case}
         {case value="video"}
         <table class="layui-table" lay-skin="line" lay-size="sm">
@@ -242,7 +242,7 @@
             {/volist}
             </tbody>
         </table>
-        {$data->render()}
+        {$data->render()|raw}
         {/case}
         {case value="music"}
         <table class="layui-table" lay-skin="line" lay-size="sm">
@@ -279,7 +279,7 @@
             {/volist}
             </tbody>
         </table>
-        {$data->render()}
+        {$data->render()|raw}
         {/case}
         {/switch}
     </div>

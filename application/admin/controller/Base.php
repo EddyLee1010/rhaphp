@@ -10,25 +10,29 @@
 
 namespace app\admin\controller;
 
-use think\Config;
+
 use think\Controller;
 use think\Db;
-use think\Loader;
-use think\Request;
+use think\facade\Config;
+use think\facade\Request;
+
 
 class Base extends Controller
 {
+
     public $admin_id;
-    public function _initialize()
+    public function initialize()
     {
-        if (!is_file(APP_PATH . '/database.php') || !is_file(APP_PATH . '/install.lock')) {
-            $root=Request::instance()->root();
+
+        if (!is_file(APP_PATH . '../config/database.php') || !is_file(APP_PATH . '/install.lock')) {
+
+            $root=Request::root();
             header('Location: ' . $root . '/?s=install');
             exit;
         }
         $admin=getAdmin();
         if (empty($admin)) {
-            $this->redirect('admin/Login/index');
+            $this->redirect(url('admin/Login/index'));
         }else{
             $this->admin_id=$admin['admin_id'];
         }
@@ -57,7 +61,7 @@ class Base extends Controller
                 }
             }
             $parent=\Tree::getParents($allMenu,$nowMenu['id']);
-            $tree=tree_to_list($menu2,'child');
+            $tree=tree_to_list($menu2,'child','sort');
             if($tree){
                 foreach ($tree as $key =>$val){
                     foreach ($parent as $key2=>$val2){

@@ -10,7 +10,7 @@
 namespace app\behavior;
 
 
-use think\Request;
+use think\facade\Request;
 
 class Upload
 {

@@ -14,7 +14,6 @@ use app\common\model\MpFriends;
 use app\common\model\MpMsg;
 use app\common\model\Qrcode;
 use think\Db;
-use think\Loader;
 
 class Entr
 {
@@ -39,7 +38,7 @@ class Entr
             'token' => $mpInfo['valid_token'],
             'encodingaeskey' => $mpInfo['encodingaeskey']
         );
-        Loader::import('wechatSdk.wechat', EXTEND_PATH, '.class.php');
+        include_once EXTEND_PATH."wechatSdk/wechat.class.php";
         if (!empty($_GET['echostr']) && !empty($_GET["signature"])) {
             if ($mpInfo['valid_status'] == 0) {
                 $model = new \app\common\model\Mp();
@@ -52,6 +51,7 @@ class Entr
         session('mid',$mid);
         session('mp_options', $options);
         $weObj = new \Wechat($options);
+        $weObj->valid();
         $weObj->getRev();//获取微信服务器发来信息(不返回结果)，被动接口必须调用
         $msgData = $weObj->getRevData();//返回微信服务器发来的信息（数组）
         if($mpInfo['status']==0){
@@ -96,6 +96,18 @@ class Entr
                                     Db::name('qrcode')
                                         ->where(['scene_id' => $result['scene_id']])
                                         ->setInc('gz_count');
+                                }
+                                $friendInfo = getFriendInfoForApi(getOrSetOpenid());
+                                $friendInfo['tagid_list'] = json_encode($friendInfo['tagid_list']);
+                                $friendModel = new MpFriends();
+                                if (!empty($friendInfo)) {
+                                    $friendInfo['mpid'] = $this->mid;
+                                    $Res = $friendModel->where(['mpid' => $this->mid, 'openid' => getOrSetOpenid()])->find();
+                                    if (empty($Res)) {
+                                        $friendModel->save($friendInfo);
+                                    } else {
+                                        $friendModel->save($friendInfo, ['mpid' => $this->mid, 'openid' => getOrSetOpenid()]);
+                                    }
                                 }
                                 $this->qrcode($result, $msgData);
                             }
@@ -177,6 +189,7 @@ class Entr
                 break;
 
         }
+        exit;
     }
 
     /**
@@ -362,6 +375,7 @@ class Entr
     public function subscribe($msg = [], $type = 'subscribe')
     {
         $friendInfo = getFriendInfoForApi(getOrSetOpenid());
+        $friendInfo['tagid_list']=json_encode($friendInfo['tagid_list']);
         $friendModel = new MpFriends();
         if (!empty($friendInfo)) {
             $friendInfo['mpid'] = $this->mid;
